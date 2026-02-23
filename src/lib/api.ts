@@ -41,6 +41,10 @@ export async function submitApplication(data: {
   logoText?: string;
   logoUrl: string;
 }): Promise<{ applicationId: string }> {
+  // Check if user is logged in to set user_id accordingly
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id ?? null;
+
   const { data: result, error } = await supabase
     .from("applications")
     .insert({
@@ -52,6 +56,7 @@ export async function submitApplication(data: {
       logo_text: data.logoText || "",
       logo_url: data.logoUrl,
       status: "submitted",
+      user_id: userId,
     })
     .select("id")
     .single();
