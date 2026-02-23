@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,10 +23,14 @@ export default function TrackApplication() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<Application | null | undefined>(undefined);
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", applicationId: "" },
+    defaultValues: {
+      email: searchParams.get("email") || "",
+      applicationId: searchParams.get("id") || "",
+    },
   });
 
   const onSubmit = async (values: z.infer<typeof schema>) => {
@@ -40,6 +45,16 @@ export default function TrackApplication() {
       setLoading(false);
     }
   };
+
+  // Auto-fetch if URL params are present
+  useEffect(() => {
+    const id = searchParams.get("id");
+    const email = searchParams.get("email");
+    if (id && email) {
+      onSubmit({ email, applicationId: id });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const statusColor = (s: string) => {
     if (s === "approved") return "bg-success text-success-foreground";

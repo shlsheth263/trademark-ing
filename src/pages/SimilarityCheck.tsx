@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -36,6 +37,7 @@ export default function SimilarityCheck() {
   const [submitted, setSubmitted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -96,6 +98,8 @@ export default function SimilarityCheck() {
       });
       setSubmitted(true);
       toast({ title: "Application Submitted", description: `Application ID: ${res.applicationId}` });
+      const email = form.getValues("email");
+      navigate(`/track-application?id=${encodeURIComponent(res.applicationId)}&email=${encodeURIComponent(email)}`);
     } catch {
       toast({ title: "Error", description: "Failed to submit. Please try again.", variant: "destructive" });
     } finally {
