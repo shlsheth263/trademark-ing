@@ -80,7 +80,7 @@ export default function ReviewApplication() {
               <p className="flex items-center gap-2"><span className="font-medium">Status:</span> <Badge className={statusColor(app.status)}>{app.status.charAt(0).toUpperCase() + app.status.slice(1)}</Badge></p>
             </div>
 
-            {app.status === "pending" && (
+            {app.status === "submitted" && (
               <div className="space-y-3 border-t pt-4">
                 <div>
                   <Label>Decision Notes {`(mandatory for rejection)`}</Label>

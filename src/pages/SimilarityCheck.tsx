@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Loader2, Upload, ChevronDown, RotateCcw } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
-import { checkSimilarity, submitApplication } from "@/lib/api";
+import { checkSimilarity, submitApplication, uploadLogo } from "@/lib/api";
 import type { SimilarMark } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
 
@@ -81,7 +81,19 @@ export default function SimilarityCheck() {
     setSubmitting(true);
     try {
       const values = form.getValues();
-      const res = await submitApplication({ ...values, logoText: values.logoText || "" });
+      let logoUrl = "";
+      if (file) {
+        logoUrl = await uploadLogo(file);
+      }
+      const res = await submitApplication({
+        businessName: values.businessName,
+        applicantName: values.applicantName,
+        contactNumber: values.contactNumber,
+        email: values.email,
+        category: values.category,
+        logoText: values.logoText || "",
+        logoUrl,
+      });
       setSubmitted(true);
       toast({ title: "Application Submitted", description: `Application ID: ${res.applicationId}` });
     } catch {

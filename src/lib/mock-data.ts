@@ -16,7 +16,7 @@ export interface Application {
   logoText: string;
   logoUrl: string;
   submissionDate: string;
-  status: "pending" | "approved" | "rejected";
+  status: "submitted" | "approved" | "rejected";
   agentNotes?: string;
 }
 
@@ -39,7 +39,7 @@ export const mockApplications: Application[] = [
     logoText: "TechVision",
     logoUrl: "https://placehold.co/300x300/1a365d/ffffff?text=TV",
     submissionDate: "2024-12-15",
-    status: "pending",
+    status: "submitted",
   },
   {
     id: "APP-2024-002",
@@ -51,7 +51,7 @@ export const mockApplications: Application[] = [
     logoText: "GreenLeaf",
     logoUrl: "https://placehold.co/300x300/2d6a4f/ffffff?text=GL",
     submissionDate: "2024-12-18",
-    status: "pending",
+    status: "submitted",
   },
   {
     id: "APP-2024-003",
