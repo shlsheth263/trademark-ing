@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const FILTERS = [
   { label: "All Applications", value: "all", icon: LayoutDashboard },
-  { label: "Pending", value: "pending", icon: Clock },
+  { label: "Submitted", value: "submitted", icon: Clock },
   { label: "Approved", value: "approved", icon: CheckCircle },
   { label: "Rejected", value: "rejected", icon: XCircle },
 ];
@@ -29,12 +29,12 @@ export default function AgentDashboard() {
     getApplications(filter).then(setApps).finally(() => setLoading(false));
   }, [filter]);
 
-  const handleLogout = () => { logout(); navigate("/agent/login"); };
+  const handleLogout = async () => { await logout(); navigate("/agent/login"); };
 
   const statusBadge = (s: string) => {
     if (s === "approved") return <Badge className="bg-success text-success-foreground">Approved</Badge>;
     if (s === "rejected") return <Badge className="bg-destructive text-destructive-foreground">Rejected</Badge>;
-    return <Badge className="bg-warning text-warning-foreground">Pending</Badge>;
+    return <Badge className="bg-warning text-warning-foreground">Submitted</Badge>;
   };
 
   return (
