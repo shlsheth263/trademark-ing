@@ -208,7 +208,7 @@ export default function SimilarityCheck() {
               <div className="flex gap-3">
                 <Button type="submit" disabled={loading}>
                   {loading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
-                  {loading ? "Analyzing Logo Using AI Model..." : "Check Similarity"}
+                  {loading ? "Analyzing Logo Using AI Model..." : "Submit a New Application"}
                 </Button>
                 <Button type="button" variant="outline" onClick={handleReset}>
                   <RotateCcw className="mr-1 h-4 w-4" /> Reset
