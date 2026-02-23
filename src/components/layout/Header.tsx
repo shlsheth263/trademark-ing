@@ -1,5 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { LogIn, User, Shield } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Home", path: "/" },
@@ -14,10 +17,29 @@ export function Header() {
   return (
     <header>
       <div className="bg-primary text-primary-foreground">
-        <div className="container py-4">
+        <div className="container flex items-center justify-between py-4">
           <Link to="/" className="text-lg font-semibold tracking-tight">
             AI Trademark Similarity &amp; Application Portal
           </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
+                <LogIn className="mr-1.5 h-4 w-4" /> Login
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="z-50 bg-popover">
+              <DropdownMenuItem asChild>
+                <Link to="/track" className="flex items-center gap-2 cursor-pointer">
+                  <User className="h-4 w-4" /> Customer
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/agent/login" className="flex items-center gap-2 cursor-pointer">
+                  <Shield className="h-4 w-4" /> Agent
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <nav className="border-b bg-secondary">
