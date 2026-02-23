@@ -1,11 +1,10 @@
 import { useState, useRef } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, Upload } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
@@ -16,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function ExploreSimilar() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [keyword, setKeyword] = useState("");
+  const [logoText, setLogoText] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SimilarMark[] | null>(null);
@@ -32,17 +31,29 @@ export default function ExploreSimilar() {
       toast({ title: "Invalid file", description: "Only PNG/JPG accepted.", variant: "destructive" });
       return;
     }
+    if (f.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" });
+      return;
+    }
     setFile(f);
     setPreview(URL.createObjectURL(f));
   };
 
   const handleSearch = async () => {
+    if (!file) {
+      toast({ title: "Logo required", description: "Please upload a logo image.", variant: "destructive" });
+      return;
+    }
+    if (!category) {
+      toast({ title: "Category required", description: "Please select a NICE class.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const fd = new FormData();
-      if (file) fd.append("logo_image", file);
-      if (keyword) fd.append("keyword", keyword);
-      if (category) fd.append("category", category);
+      fd.append("logo_image", file);
+      fd.append("category", category);
+      if (logoText) fd.append("logoText", logoText);
       const res = await exploreSimilarity(fd);
       setResults(res);
     } catch {
@@ -60,18 +71,25 @@ export default function ExploreSimilar() {
     <Layout>
       <div className="container py-8">
         <h1 className="mb-1 text-xl font-semibold">Explore Similar Marks</h1>
-        <p className="mb-6 text-sm text-muted-foreground">Search registered trademarks by logo, keyword, or category.</p>
+        <p className="mb-6 text-sm text-muted-foreground">Upload your logo and select a category to search registered trademarks.</p>
 
-        <Tabs defaultValue="logo" className="mb-6">
-          <TabsList>
-            <TabsTrigger value="logo">Logo Upload</TabsTrigger>
-            <TabsTrigger value="keyword">Keyword Search</TabsTrigger>
-          </TabsList>
-          <TabsContent value="logo" className="mt-4 space-y-3">
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Trademark Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div>
-              <Label>Upload Logo (PNG/JPG)</Label>
+              <Label>Trademark Category (NICE Class) *</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Select a class" /></SelectTrigger>
+                <SelectContent>{NICE_CLASSES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Logo Upload (PNG/JPG, max 5MB) *</Label>
               <div className="mt-1 flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
+                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
                   <Upload className="mr-1 h-4 w-4" /> Choose File
                 </Button>
                 <span className="text-sm text-muted-foreground">{file?.name || "No file selected"}</span>
@@ -79,25 +97,17 @@ export default function ExploreSimilar() {
               </div>
               {preview && <img src={preview} alt="Preview" className="mt-2 h-24 w-24 rounded border object-contain" />}
             </div>
-          </TabsContent>
-          <TabsContent value="keyword" className="mt-4">
-            <Label>Keyword</Label>
-            <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="Enter trademark name or keyword" className="mt-1 max-w-md" />
-          </TabsContent>
-        </Tabs>
 
-        <div className="mb-4 flex flex-wrap items-end gap-4">
-          <div className="w-64">
-            <Label>Category (optional)</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="mt-1"><SelectValue placeholder="All classes" /></SelectTrigger>
-              <SelectContent>{NICE_CLASSES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <Button onClick={handleSearch} disabled={loading}>
-            {loading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />} Search
-          </Button>
-        </div>
+            <div>
+              <Label>Text Present in Logo (optional)</Label>
+              <Input value={logoText} onChange={(e) => setLogoText(e.target.value)} placeholder="e.g. MyBrand" className="mt-1" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Button onClick={handleSearch} disabled={loading} className="mb-6">
+          {loading && <Loader2 className="mr-1 h-4 w-4 animate-spin" />} Search
+        </Button>
 
         {results && (
           <>
