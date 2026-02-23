@@ -99,7 +99,7 @@ export default function SimilarityCheck() {
       setSubmitted(true);
       toast({ title: "Application Submitted", description: `Application ID: ${res.applicationId}` });
       const email = form.getValues("email");
-      navigate(`/track-application?id=${encodeURIComponent(res.applicationId)}&email=${encodeURIComponent(email)}`);
+      navigate(`/track?id=${encodeURIComponent(res.applicationId)}&email=${encodeURIComponent(email)}`);
     } catch {
       toast({ title: "Error", description: "Failed to submit. Please try again.", variant: "destructive" });
     } finally {
