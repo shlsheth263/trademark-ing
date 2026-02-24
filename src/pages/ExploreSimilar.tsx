@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Upload } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Loader2, Upload, X } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
 import { exploreSimilarity } from "@/lib/api";
 import type { SimilarMark } from "@/lib/mock-data";
@@ -21,6 +22,7 @@ export default function ExploreSimilar() {
   const [results, setResults] = useState<SimilarMark[] | null>(null);
   const [minSimilarity, setMinSimilarity] = useState(0);
   const [sortDesc, setSortDesc] = useState(true);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -143,7 +145,7 @@ export default function ExploreSimilar() {
                   {filtered?.map((m) => (
                     <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="px-3 py-2">
-                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain" />
+                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightboxUrl(m.imageUrl)} />
                       </td>
                       <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
                       <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
@@ -157,6 +159,12 @@ export default function ExploreSimilar() {
             </div>
           </>
         )}
+
+        <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+          <DialogContent className="flex items-center justify-center p-2 sm:max-w-md">
+            {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
