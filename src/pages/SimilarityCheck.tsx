@@ -121,9 +121,9 @@ export default function SimilarityCheck() {
   return (
     <Layout>
       <div className="container py-8">
-        <h1 className="mb-1 text-xl font-semibold">Check Trademark Similarity</h1>
+        <h1 className="mb-1 text-xl font-semibold">Submit Application</h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          Complete the form below and upload your logo to check against registered trademarks.
+          Complete the form below and upload your logo to check against registered trademarks and submit your application.
         </p>
 
         {!results ? (
@@ -183,14 +183,40 @@ export default function SimilarityCheck() {
 
                       <div>
                         <Label>Logo Upload (PNG/JPG, max 5MB) *</Label>
-                        <div className="mt-1 flex items-center gap-4">
-                          <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                            <Upload className="mr-1 h-4 w-4" /> Choose File
-                          </Button>
-                          <span className="text-sm text-muted-foreground">{file?.name || "No file selected"}</span>
-                          <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleFile} />
+                        <div
+                          className="mt-1 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/30 p-6 transition-colors hover:border-primary/50 hover:bg-muted/50 cursor-pointer"
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const f = e.dataTransfer.files?.[0];
+                            if (f) {
+                              if (!["image/png", "image/jpeg"].includes(f.type)) {
+                                toast({ title: "Invalid file type", description: "Only PNG and JPG files are accepted.", variant: "destructive" });
+                                return;
+                              }
+                              if (f.size > 5 * 1024 * 1024) {
+                                toast({ title: "File too large", description: "Maximum file size is 5MB.", variant: "destructive" });
+                                return;
+                              }
+                              setFile(f);
+                              setPreview(URL.createObjectURL(f));
+                            }
+                          }}
+                          onClick={() => fileRef.current?.click()}
+                        >
+                          {preview ? (
+                            <img src={preview} alt="Logo preview" className="h-32 w-32 rounded border object-contain" />
+                          ) : (
+                            <>
+                              <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
+                              <p className="text-sm font-medium text-foreground">Drop file here or click to browse</p>
+                              <p className="text-xs text-muted-foreground">PNG or JPG, max 5MB</p>
+                            </>
+                          )}
+                          {file && <p className="mt-2 text-xs text-muted-foreground">{file.name}</p>}
                         </div>
-                        {preview && <img src={preview} alt="Logo preview" className="mt-3 h-32 w-32 rounded border object-contain" />}
+                        <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleFile} />
                       </div>
 
                       <FormField control={form.control} name="logoText" render={({ field }) => (

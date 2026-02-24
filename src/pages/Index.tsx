@@ -27,9 +27,9 @@ const Index = () => {
                   <Search className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Check Trademark Similarity</CardTitle>
-                  <CardDescription>
-                    Upload your logo and check against registered trademarks
+                   <CardTitle className="text-lg">Submit Application</CardTitle>
+                   <CardDescription>
+                     Upload your logo, check similarity, and submit your application
                   </CardDescription>
                 </div>
               </div>
