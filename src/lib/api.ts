@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { BASE_URL } from "@/config/api";
 import { type SimilarMark, type Application } from "./mock-data";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -12,17 +11,14 @@ function getTrademarkImageUrl(filename: string): string {
 
 // Call real backend API for similarity check
 export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]> {
-  // The API expects only a "file" field
   const apiFormData = new FormData();
   const logoFile = formData.get("logo_image");
   if (logoFile) apiFormData.append("file", logoFile);
 
-  const response = await fetch(`${BASE_URL}/similarity-check`, {
-    method: "POST",
+  const { data, error } = await supabase.functions.invoke("similarity-proxy", {
     body: apiFormData,
   });
-  if (!response.ok) throw new Error("Similarity check failed");
-  const data = await response.json();
+  if (error) throw new Error("Similarity check failed");
   return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
     id: `result-${i}`,
     trademarkId: r.filename.replace(/\.\w+$/, ""),
@@ -38,12 +34,10 @@ export async function exploreSimilarity(formData: FormData): Promise<SimilarMark
   const logoFile = formData.get("logo_image");
   if (logoFile) apiFormData.append("file", logoFile);
 
-  const response = await fetch(`${BASE_URL}/similarity-check`, {
-    method: "POST",
+  const { data, error } = await supabase.functions.invoke("similarity-proxy", {
     body: apiFormData,
   });
-  if (!response.ok) throw new Error("Explore similarity failed");
-  const data = await response.json();
+  if (error) throw new Error("Explore similarity failed");
   return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
     id: `explore-${i}`,
     trademarkId: r.filename.replace(/\.\w+$/, ""),
