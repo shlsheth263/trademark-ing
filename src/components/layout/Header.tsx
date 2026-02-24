@@ -6,7 +6,7 @@ import { LogIn, User, Shield } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Home", path: "/" },
-  { label: "Check Similarity", path: "/check-similarity" },
+  { label: "Submit Application", path: "/check-similarity" },
   { label: "Explore Similar Marks", path: "/explore" },
   { label: "Track Application", path: "/track" },
 ];
