@@ -12,9 +12,14 @@ function getTrademarkImageUrl(filename: string): string {
 
 // Call real backend API for similarity check
 export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]> {
-  const response = await fetch(`${BASE_URL}/api/similarity`, {
+  // The API expects only a "file" field
+  const apiFormData = new FormData();
+  const logoFile = formData.get("logo_image");
+  if (logoFile) apiFormData.append("file", logoFile);
+
+  const response = await fetch(`${BASE_URL}/similarity-check`, {
     method: "POST",
-    body: formData,
+    body: apiFormData,
   });
   if (!response.ok) throw new Error("Similarity check failed");
   const data = await response.json();
@@ -29,9 +34,13 @@ export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]
 
 // Call real backend API for explore similarity
 export async function exploreSimilarity(formData: FormData): Promise<SimilarMark[]> {
-  const response = await fetch(`${BASE_URL}/api/similarity`, {
+  const apiFormData = new FormData();
+  const logoFile = formData.get("logo_image");
+  if (logoFile) apiFormData.append("file", logoFile);
+
+  const response = await fetch(`${BASE_URL}/similarity-check`, {
     method: "POST",
-    body: formData,
+    body: apiFormData,
   });
   if (!response.ok) throw new Error("Explore similarity failed");
   const data = await response.json();
