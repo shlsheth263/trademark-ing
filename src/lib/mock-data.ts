@@ -4,6 +4,10 @@ export interface SimilarMark {
   similarity: number;
   imageUrl: string;
   name: string;
+  dinoScore: number;
+  vggScore: number;
+  textScore: number;
+  queryOcr: string[];
 }
 
 export interface Application {
@@ -26,6 +30,10 @@ export const mockSimilarMarks: SimilarMark[] = Array.from({ length: 12 }, (_, i)
   similarity: Math.round((95 - i * 5.5) * 10) / 10,
   imageUrl: `https://placehold.co/200x200/1a365d/ffffff?text=TM${i + 1}`,
   name: `Trademark ${i + 1}`,
+  dinoScore: 0,
+  vggScore: 0,
+  textScore: 0,
+  queryOcr: [],
 }));
 
 export const mockApplications: Application[] = [
