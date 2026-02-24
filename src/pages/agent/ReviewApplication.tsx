@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { getApplicationById, submitDecision } from "@/lib/api";
 import type { Application, SimilarMark } from "@/lib/mock-data";
@@ -19,6 +20,7 @@ export default function ReviewApplication() {
   const [loading, setLoading] = useState(true);
   const [deciding, setDeciding] = useState(false);
   const [notes, setNotes] = useState("");
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -103,18 +105,53 @@ export default function ReviewApplication() {
         <Card>
           <CardHeader><CardTitle className="text-sm">AI Similarity Analysis</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {app.similarMarks.map((m) => (
-                <div key={m.id} className="rounded border p-3 text-center">
-                  <img src={m.imageUrl} alt={m.trademarkId} className="mx-auto mb-2 h-16 w-16 rounded border object-contain" />
-                  <p className="text-lg font-bold text-accent">{m.similarity}%</p>
-                  <p className="text-xs text-muted-foreground">{m.trademarkId}</p>
-                </div>
-              ))}
-            </div>
+            {app.similarMarks.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No similarity results available.</p>
+            ) : (
+              <div className="overflow-x-auto rounded border border-border">
+                {app.similarMarks[0]?.queryOcr?.length > 0 && (
+                  <div className="border-b bg-muted/30 px-3 py-2 text-sm">
+                    <span className="font-medium">Detected OCR Text:</span>{" "}
+                    <span className="text-accent font-semibold">{app.similarMarks[0].queryOcr.join(", ")}</span>
+                  </div>
+                )}
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">Image</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">ID</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Final</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG</th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {app.similarMarks.map((m) => (
+                      <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                        <td className="px-3 py-2">
+                          <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightboxUrl(m.imageUrl)} />
+                        </td>
+                        <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
+                        <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
+                        <td className="px-3 py-2 text-right">{(m.dinoScore * 100).toFixed(1)}%</td>
+                        <td className="px-3 py-2 text-right">{(m.vggScore * 100).toFixed(1)}%</td>
+                        <td className="px-3 py-2 text-right">{(m.textScore * 100).toFixed(1)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+        <DialogContent className="flex items-center justify-center p-2 sm:max-w-md">
+          {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
