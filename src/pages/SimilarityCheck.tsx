@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Loader2, Upload, ChevronDown, RotateCcw } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
 import { checkSimilarity, submitApplication, uploadLogo } from "@/lib/api";
@@ -35,6 +36,7 @@ export default function SimilarityCheck() {
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<SimilarMark[] | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -267,7 +269,7 @@ export default function SimilarityCheck() {
                   {results.map((m) => (
                     <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="px-3 py-2">
-                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain" />
+                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightboxUrl(m.imageUrl)} />
                       </td>
                       <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
                       <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
@@ -294,6 +296,12 @@ export default function SimilarityCheck() {
             </p>
           </div>
         )}
+
+        <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
+          <DialogContent className="flex items-center justify-center p-2 sm:max-w-md">
+            {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
