@@ -12,6 +12,7 @@ import TrackApplication from "./pages/TrackApplication";
 import AgentLogin from "./pages/agent/Login";
 import AgentDashboard from "./pages/agent/Dashboard";
 import ReviewApplication from "./pages/agent/ReviewApplication";
+import BulkUpload from "./pages/agent/BulkUpload";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/agent/login" element={<AgentLogin />} />
             <Route path="/agent/dashboard" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
             <Route path="/agent/review/:id" element={<ProtectedRoute><ReviewApplication /></ProtectedRoute>} />
+            <Route path="/agent/bulk-upload" element={<ProtectedRoute><BulkUpload /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
