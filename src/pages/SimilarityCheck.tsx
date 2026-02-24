@@ -245,16 +245,39 @@ export default function SimilarityCheck() {
         ) : (
           <div>
             <h2 className="mb-4 text-lg font-semibold">Top Matching Registered Trademarks</h2>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {results.map((m) => (
-                <Card key={m.id} className="text-center">
-                  <CardContent className="p-4">
-                    <img src={m.imageUrl} alt={m.trademarkId} className="mx-auto mb-3 h-24 w-24 rounded border object-contain" />
-                    <p className="text-xl font-bold text-accent">{m.similarity}%</p>
-                    <p className="text-xs text-muted-foreground">{m.trademarkId}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            {results[0]?.queryOcr?.length > 0 && (
+              <div className="mb-4 rounded border border-border bg-muted/30 px-4 py-2 text-sm">
+                <span className="font-medium">Detected OCR Text:</span>{" "}
+                <span className="text-accent font-semibold">{results[0].queryOcr.join(", ")}</span>
+              </div>
+            )}
+            <div className="mb-6 overflow-x-auto rounded border border-border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Image</th>
+                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Trademark ID</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Final Score</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO Score</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG Score</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((m) => (
+                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="px-3 py-2">
+                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain" />
+                      </td>
+                      <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
+                      <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
+                      <td className="px-3 py-2 text-right">{(m.dinoScore * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right">{(m.vggScore * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right">{(m.textScore * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             <div className="mb-4 flex gap-3">

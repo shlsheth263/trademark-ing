@@ -19,12 +19,17 @@ export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]
     body: apiFormData,
   });
   if (error) throw new Error("Similarity check failed");
-  return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
+  const queryOcr: string[] = data.query_ocr || [];
+  return (data.results || []).map((r: { filename: string; final_score: number; dino_score: number; vgg_score: number; text_score: number }, i: number) => ({
     id: `result-${i}`,
     trademarkId: r.filename.replace(/\.\w+$/, ""),
     similarity: Math.round(r.final_score * 10) / 10,
     imageUrl: getTrademarkImageUrl(r.filename),
     name: r.filename,
+    dinoScore: r.dino_score ?? 0,
+    vggScore: r.vgg_score ?? 0,
+    textScore: r.text_score ?? 0,
+    queryOcr,
   }));
 }
 
@@ -38,12 +43,17 @@ export async function exploreSimilarity(formData: FormData): Promise<SimilarMark
     body: apiFormData,
   });
   if (error) throw new Error("Explore similarity failed");
-  return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
+  const queryOcr: string[] = data.query_ocr || [];
+  return (data.results || []).map((r: { filename: string; final_score: number; dino_score: number; vgg_score: number; text_score: number }, i: number) => ({
     id: `explore-${i}`,
     trademarkId: r.filename.replace(/\.\w+$/, ""),
     similarity: Math.round(r.final_score * 10) / 10,
     imageUrl: getTrademarkImageUrl(r.filename),
     name: r.filename,
+    dinoScore: r.dino_score ?? 0,
+    vggScore: r.vgg_score ?? 0,
+    textScore: r.text_score ?? 0,
+    queryOcr,
   }));
 }
 
