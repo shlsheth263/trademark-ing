@@ -126,7 +126,7 @@ export async function getApplications(status?: string): Promise<Application[]> {
   return (data || []).map(mapDbApp);
 }
 
-// Agent: get single application with similar marks
+// Agent: get single application with similar marks (auto-runs similarity check)
 export async function getApplicationById(id: string): Promise<Application & { similarMarks: SimilarMark[] }> {
   const { data, error } = await supabase
     .from("applications")
@@ -134,8 +134,24 @@ export async function getApplicationById(id: string): Promise<Application & { si
     .eq("id", id)
     .single();
   if (error) throw error;
-  // Similar marks will be populated when the agent triggers a similarity check
-  return { ...mapDbApp(data), similarMarks: [] };
+  const application = mapDbApp(data);
+
+  // Auto-run similarity check using the application's logo
+  let similarMarks: SimilarMark[] = [];
+  if (application.logoUrl) {
+    try {
+      const response = await fetch(application.logoUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "logo.png", { type: blob.type });
+      const formData = new FormData();
+      formData.append("logo_image", file);
+      similarMarks = await checkSimilarity(formData);
+    } catch (e) {
+      console.error("Failed to fetch similarity results for review:", e);
+    }
+  }
+
+  return { ...application, similarMarks };
 }
 
 // Agent: submit decision
