@@ -1,21 +1,46 @@
 import { supabase } from "@/integrations/supabase/client";
 import { BASE_URL } from "@/config/api";
-import { mockSimilarMarks, type SimilarMark, type Application } from "./mock-data";
+import { type SimilarMark, type Application } from "./mock-data";
 
-// Similarity check still uses external ML API (mock for now)
-export async function checkSimilarity(_formData: FormData): Promise<SimilarMark[]> {
-  await new Promise((r) => setTimeout(r, 2000));
-  return mockSimilarMarks;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const TRADEMARK_IMAGES_BUCKET = "trademark-images";
+
+// Build public URL for a trademark image stored in the storage bucket
+function getTrademarkImageUrl(filename: string): string {
+  return `${SUPABASE_URL}/storage/v1/object/public/${TRADEMARK_IMAGES_BUCKET}/${filename}`;
 }
 
-export async function exploreSimilarity(_formData: FormData): Promise<SimilarMark[]> {
-  await new Promise((r) => setTimeout(r, 2000));
-  return Array.from({ length: 20 }, (_, i) => ({
+// Call real backend API for similarity check
+export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]> {
+  const response = await fetch(`${BASE_URL}/api/similarity`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Similarity check failed");
+  const data = await response.json();
+  return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
+    id: `result-${i}`,
+    trademarkId: r.filename.replace(/\.\w+$/, ""),
+    similarity: Math.round(r.final_score * 10) / 10,
+    imageUrl: getTrademarkImageUrl(r.filename),
+    name: r.filename,
+  }));
+}
+
+// Call real backend API for explore similarity
+export async function exploreSimilarity(formData: FormData): Promise<SimilarMark[]> {
+  const response = await fetch(`${BASE_URL}/api/similarity`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) throw new Error("Explore similarity failed");
+  const data = await response.json();
+  return (data.results || []).map((r: { filename: string; final_score: number }, i: number) => ({
     id: `explore-${i}`,
-    trademarkId: `TM-${String(2024100 + i)}`,
-    similarity: Math.round((90 - i * 3.2) * 10) / 10,
-    imageUrl: `https://placehold.co/200x200/1a365d/ffffff?text=E${i + 1}`,
-    name: `Mark ${i + 1}`,
+    trademarkId: r.filename.replace(/\.\w+$/, ""),
+    similarity: Math.round(r.final_score * 10) / 10,
+    imageUrl: getTrademarkImageUrl(r.filename),
+    name: r.filename,
   }));
 }
 
@@ -88,7 +113,7 @@ export async function getApplications(status?: string): Promise<Application[]> {
   return (data || []).map(mapDbApp);
 }
 
-// Agent: get single application with similar marks (mock for AI part)
+// Agent: get single application with similar marks
 export async function getApplicationById(id: string): Promise<Application & { similarMarks: SimilarMark[] }> {
   const { data, error } = await supabase
     .from("applications")
@@ -96,7 +121,8 @@ export async function getApplicationById(id: string): Promise<Application & { si
     .eq("id", id)
     .single();
   if (error) throw error;
-  return { ...mapDbApp(data), similarMarks: mockSimilarMarks };
+  // Similar marks will be populated when the agent triggers a similarity check
+  return { ...mapDbApp(data), similarMarks: [] };
 }
 
 // Agent: submit decision
