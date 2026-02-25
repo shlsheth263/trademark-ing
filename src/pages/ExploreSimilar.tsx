@@ -113,55 +113,24 @@ export default function ExploreSimilar() {
 
         {results && (
           <>
-            {results[0]?.queryOcr?.length > 0 && (
-              <div className="mb-4 rounded border border-border bg-muted/30 px-4 py-2 text-sm">
-                <span className="font-medium">Detected OCR Text:</span>{" "}
-                <span className="text-accent font-semibold">{results[0].queryOcr.join(", ")}</span>
-              </div>
-            )}
             <div className="mb-4 flex flex-wrap items-center gap-6">
-              <div className="flex items-center gap-3">
-                <Label className="text-xs">Min Similarity: {minSimilarity}%</Label>
-                <Slider value={[minSimilarity]} onValueChange={([v]) => setMinSimilarity(v)} max={100} step={1} className="w-40" />
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setSortDesc(!sortDesc)}>
-                Sort: {sortDesc ? "High → Low" : "Low → High"}
-              </Button>
               <span className="text-xs text-muted-foreground">{filtered?.length} results</span>
             </div>
-            <div className="overflow-x-auto rounded border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Image</th>
-                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Trademark ID</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Final Score</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Color</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Font</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Shape</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered?.map((m) => (
-                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2">
-                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightboxUrl(m.imageUrl)} />
-                      </td>
-                      <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
-                      <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
-                      <td className="px-3 py-2 text-right">{(m.dinoScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.vggScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.textScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.colorScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.fontScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.shapeScore * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {filtered?.map((m) => (
+                <div key={m.id} className="group rounded-lg border border-border bg-card p-2 transition-shadow hover:shadow-md">
+                  <img
+                    src={m.imageUrl}
+                    alt={m.trademarkId}
+                    className="aspect-square w-full rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setLightboxUrl(m.imageUrl)}
+                  />
+                  <div className="mt-2 text-center">
+                    <p className="text-xs font-medium truncate">{m.trademarkId}</p>
+                    <p className="text-xs font-bold text-accent">{m.similarity}% match</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </>
         )}
