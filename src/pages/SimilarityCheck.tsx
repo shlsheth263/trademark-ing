@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Upload, ChevronDown, RotateCcw } from "lucide-react";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { Loader2, Upload, ChevronDown, RotateCcw, AlertTriangle } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
 import { checkSimilarity, submitApplication, uploadLogo } from "@/lib/api";
 import type { SimilarMark } from "@/lib/mock-data";
@@ -37,6 +38,7 @@ export default function SimilarityCheck() {
   const [results, setResults] = useState<SimilarMark[] | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [showWarning, setShowWarning] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -80,6 +82,16 @@ export default function SimilarityCheck() {
     }
   };
 
+  const hasHighSimilarity = results?.some((m) => m.similarity >= 90);
+
+  const handleSubmitClick = () => {
+    if (hasHighSimilarity) {
+      setShowWarning(true);
+    } else {
+      handleSubmitApplication();
+    }
+  };
+
   const handleSubmitApplication = async () => {
     if (submitted) return;
     setSubmitting(true);
@@ -99,6 +111,7 @@ export default function SimilarityCheck() {
         logoUrl,
       });
       setSubmitted(true);
+      setShowWarning(false);
       toast({ title: "Application Submitted", description: `Application ID: ${res.applicationId}` });
       const email = form.getValues("email");
       navigate(`/track?id=${encodeURIComponent(res.applicationId)}&email=${encodeURIComponent(email)}`);
@@ -247,49 +260,26 @@ export default function SimilarityCheck() {
         ) : (
           <div>
             <h2 className="mb-4 text-lg font-semibold">Top Matching Registered Trademarks</h2>
-            {results[0]?.queryOcr?.length > 0 && (
-              <div className="mb-4 rounded border border-border bg-muted/30 px-4 py-2 text-sm">
-                <span className="font-medium">Detected OCR Text:</span>{" "}
-                <span className="text-accent font-semibold">{results[0].queryOcr.join(", ")}</span>
-              </div>
-            )}
-            <div className="mb-6 overflow-x-auto rounded border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Image</th>
-                    <th className="px-3 py-2 text-left font-medium text-muted-foreground">Trademark ID</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Final Score</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Color</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Font</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Shape</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((m) => (
-                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-3 py-2">
-                        <img src={m.imageUrl} alt={m.trademarkId} className="h-14 w-14 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setLightboxUrl(m.imageUrl)} />
-                      </td>
-                      <td className="px-3 py-2 font-medium">{m.trademarkId}</td>
-                      <td className="px-3 py-2 text-right font-bold text-accent">{m.similarity}%</td>
-                      <td className="px-3 py-2 text-right">{(m.dinoScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.vggScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.textScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.colorScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.fontScore * 100).toFixed(1)}%</td>
-                      <td className="px-3 py-2 text-right">{(m.shapeScore * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {results.map((m) => (
+                <div key={m.id} className="group rounded-lg border border-border bg-card p-2 transition-shadow hover:shadow-md">
+                  <img
+                    src={m.imageUrl}
+                    alt={m.trademarkId}
+                    className="aspect-square w-full rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => setLightboxUrl(m.imageUrl)}
+                  />
+                  <div className="mt-2 text-center">
+                    <p className="text-xs font-medium truncate">{m.trademarkId}</p>
+                    <p className="text-xs font-bold text-accent">{m.similarity}% match</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="mb-4 flex gap-3">
-              <Button onClick={handleSubmitApplication} disabled={submitting || submitted}>
+              <Button onClick={handleSubmitClick} disabled={submitting || submitted}>
                 {submitting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
                 {submitted ? "Application Submitted" : "Submit Application"}
               </Button>
@@ -308,6 +298,30 @@ export default function SimilarityCheck() {
             {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={showWarning} onOpenChange={setShowWarning}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+                <AlertDialogTitle>High Similarity Detected</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription className="space-y-3 text-sm">
+                <p>Your uploaded logo appears to closely resemble one or more existing registered trademarks.</p>
+                <p>Submitting this application may increase the likelihood of objection or rejection during official examination.</p>
+                <p className="font-medium text-foreground">Please review the similar marks displayed before proceeding.</p>
+                <p>Do you wish to continue with submission?</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel>Review Similar Marks</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSubmitApplication} disabled={submitting}>
+                {submitting && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}
+                Proceed with Submission
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
