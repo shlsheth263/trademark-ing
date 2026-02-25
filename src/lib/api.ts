@@ -20,15 +20,18 @@ export async function checkSimilarity(formData: FormData): Promise<SimilarMark[]
   });
   if (error) throw new Error("Similarity check failed");
   const queryOcr: string[] = data.query_ocr || [];
-  return (data.results || []).map((r: { filename: string; final_score: number; dino_score: number; vgg_score: number; text_score: number }, i: number) => ({
+  return (data.results || []).map((r: Record<string, number | string>, i: number) => ({
     id: `result-${i}`,
-    trademarkId: r.filename.replace(/\.\w+$/, ""),
-    similarity: Math.round(r.final_score * 10) / 10,
-    imageUrl: getTrademarkImageUrl(r.filename),
-    name: r.filename,
-    dinoScore: r.dino_score ?? 0,
-    vggScore: r.vgg_score ?? 0,
-    textScore: r.text_score ?? 0,
+    trademarkId: (r.filename as string).replace(/\.\w+$/, ""),
+    similarity: Math.round((r.final_score as number) * 10) / 10,
+    imageUrl: getTrademarkImageUrl(r.filename as string),
+    name: r.filename as string,
+    dinoScore: (r.dino_score as number) ?? 0,
+    vggScore: (r.vgg_score as number) ?? 0,
+    textScore: (r.text_score as number) ?? 0,
+    colorScore: (r.color_score as number) ?? 0,
+    fontScore: (r.font_score as number) ?? 0,
+    shapeScore: (r.shape_score as number) ?? 0,
     queryOcr,
   }));
 }
@@ -44,15 +47,18 @@ export async function exploreSimilarity(formData: FormData): Promise<SimilarMark
   });
   if (error) throw new Error("Explore similarity failed");
   const queryOcr: string[] = data.query_ocr || [];
-  return (data.results || []).map((r: { filename: string; final_score: number; dino_score: number; vgg_score: number; text_score: number }, i: number) => ({
+  return (data.results || []).map((r: Record<string, number | string>, i: number) => ({
     id: `explore-${i}`,
-    trademarkId: r.filename.replace(/\.\w+$/, ""),
-    similarity: Math.round(r.final_score * 10) / 10,
-    imageUrl: getTrademarkImageUrl(r.filename),
-    name: r.filename,
-    dinoScore: r.dino_score ?? 0,
-    vggScore: r.vgg_score ?? 0,
-    textScore: r.text_score ?? 0,
+    trademarkId: (r.filename as string).replace(/\.\w+$/, ""),
+    similarity: Math.round((r.final_score as number) * 10) / 10,
+    imageUrl: getTrademarkImageUrl(r.filename as string),
+    name: r.filename as string,
+    dinoScore: (r.dino_score as number) ?? 0,
+    vggScore: (r.vgg_score as number) ?? 0,
+    textScore: (r.text_score as number) ?? 0,
+    colorScore: (r.color_score as number) ?? 0,
+    fontScore: (r.font_score as number) ?? 0,
+    shapeScore: (r.shape_score as number) ?? 0,
     queryOcr,
   }));
 }
