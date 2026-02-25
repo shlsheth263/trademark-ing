@@ -260,9 +260,12 @@ export default function SimilarityCheck() {
                     <th className="px-3 py-2 text-left font-medium text-muted-foreground">Image</th>
                     <th className="px-3 py-2 text-left font-medium text-muted-foreground">Trademark ID</th>
                     <th className="px-3 py-2 text-right font-medium text-muted-foreground">Final Score</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO Score</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG Score</th>
-                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text Score</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">DINO</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">VGG</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Text</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Color</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Font</th>
+                    <th className="px-3 py-2 text-right font-medium text-muted-foreground">Shape</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -276,6 +279,9 @@ export default function SimilarityCheck() {
                       <td className="px-3 py-2 text-right">{(m.dinoScore * 100).toFixed(1)}%</td>
                       <td className="px-3 py-2 text-right">{(m.vggScore * 100).toFixed(1)}%</td>
                       <td className="px-3 py-2 text-right">{(m.textScore * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right">{(m.colorScore * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right">{(m.fontScore * 100).toFixed(1)}%</td>
+                      <td className="px-3 py-2 text-right">{(m.shapeScore * 100).toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>

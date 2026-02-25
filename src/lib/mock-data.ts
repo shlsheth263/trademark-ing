@@ -7,6 +7,9 @@ export interface SimilarMark {
   dinoScore: number;
   vggScore: number;
   textScore: number;
+  colorScore: number;
+  fontScore: number;
+  shapeScore: number;
   queryOcr: string[];
 }
 
@@ -33,6 +36,9 @@ export const mockSimilarMarks: SimilarMark[] = Array.from({ length: 12 }, (_, i)
   dinoScore: 0,
   vggScore: 0,
   textScore: 0,
+  colorScore: 0,
+  fontScore: 0,
+  shapeScore: 0,
   queryOcr: [],
 }));
 
