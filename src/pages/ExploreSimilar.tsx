@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Loader2, Upload, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Loader2, Upload, Download } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
 import { exploreSimilarity } from "@/lib/api";
 import type { SimilarMark } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
+import { generateMarkDisplayData } from "@/lib/random-mark-data";
 
 export default function ExploreSimilar() {
   const [file, setFile] = useState<File | null>(null);
@@ -20,9 +23,12 @@ export default function ExploreSimilar() {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SimilarMark[] | null>(null);
-  const [minSimilarity, setMinSimilarity] = useState(0);
-  const [sortDesc, setSortDesc] = useState(true);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [showExport, setShowExport] = useState(false);
+  const [exportEmail, setExportEmail] = useState("");
+  const [exportImageReport, setExportImageReport] = useState(true);
+  const [exportTextReport, setExportTextReport] = useState(true);
+  const [exportFormat, setExportFormat] = useState<"excel" | "pdf" | "">("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -65,9 +71,20 @@ export default function ExploreSimilar() {
     }
   };
 
-  const filtered = results
-    ?.filter((m) => m.similarity >= minSimilarity)
-    .sort((a, b) => (sortDesc ? b.similarity - a.similarity : a.similarity - b.similarity));
+  const handleExportSubmit = () => {
+    if (!exportEmail) {
+      toast({ title: "Email required", description: "Please enter an email address.", variant: "destructive" });
+      return;
+    }
+    if (!exportFormat) {
+      toast({ title: "Format required", description: "Please select an export format.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    setShowExport(false);
+    setExportEmail("");
+    setExportFormat("");
+  };
 
   return (
     <Layout>
@@ -113,23 +130,49 @@ export default function ExploreSimilar() {
 
         {results && (
           <>
-            <div className="mb-4 flex flex-wrap items-center gap-6">
-              <span className="text-xs text-muted-foreground">{filtered?.length} results</span>
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{results.length} results</span>
+              <Button variant="default" size="sm" onClick={() => setShowExport(true)}>
+                <Download className="mr-1 h-4 w-4" /> Export Search Report
+              </Button>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {filtered?.map((m) => (
-                <div key={m.id} className="group rounded-lg border border-border bg-card p-2 transition-shadow hover:shadow-md">
-                  <img
-                    src={m.imageUrl}
-                    alt={m.trademarkId}
-                    className="aspect-square w-full rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setLightboxUrl(m.imageUrl)}
-                  />
-                  <div className="mt-2 text-center">
-                    <p className="text-xs font-medium truncate">{m.trademarkId}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-12">S/N</TableHead>
+                    <TableHead className="w-28">Thumbnail</TableHead>
+                    <TableHead>Application No.</TableHead>
+                    <TableHead>Class No.</TableHead>
+                    <TableHead>Applicant(s)</TableHead>
+                    <TableHead>Filing Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {results.map((m, i) => {
+                    const data = generateMarkDisplayData(m.trademarkId, i);
+                    return (
+                      <TableRow key={m.id}>
+                        <TableCell className="font-medium">{i + 1}</TableCell>
+                        <TableCell>
+                          <img
+                            src={m.imageUrl}
+                            alt={m.trademarkId}
+                            className="h-20 w-20 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setLightboxUrl(m.imageUrl)}
+                          />
+                        </TableCell>
+                        <TableCell className="text-primary font-medium">{m.trademarkId}</TableCell>
+                        <TableCell>{data.classNo}</TableCell>
+                        <TableCell>{data.applicant}</TableCell>
+                        <TableCell>{data.filingDate}</TableCell>
+                        <TableCell>{data.status}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           </>
         )}
@@ -137,6 +180,54 @@ export default function ExploreSimilar() {
         <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
           <DialogContent className="flex items-center justify-center p-2 sm:max-w-md">
             {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
+          </DialogContent>
+        </Dialog>
+
+        {/* Export Search Report Dialog */}
+        <Dialog open={showExport} onOpenChange={setShowExport}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Export Search Report</DialogTitle>
+              <DialogDescription>
+                You will be notified via the email address provided once the results are ready and you may retrieve them via the email notification.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-4">
+                <Label className="w-16 shrink-0">Email</Label>
+                <Input value={exportEmail} onChange={(e) => setExportEmail(e.target.value)} placeholder="your@email.com" />
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Please select one/both of the following options:</p>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={exportImageReport} onCheckedChange={(v) => setExportImageReport(!!v)} />
+                    Image Search Report
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={exportTextReport} onCheckedChange={(v) => setExportTextReport(!!v)} />
+                    Text Search Report
+                  </label>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Please select the file to export in:</p>
+                <RadioGroup value={exportFormat} onValueChange={(v) => setExportFormat(v as "excel" | "pdf")}>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="excel" /> Excel
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="pdf" /> PDF
+                    </label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowExport(false)}>Cancel</Button>
+              <Button onClick={handleExportSubmit}>Submit</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

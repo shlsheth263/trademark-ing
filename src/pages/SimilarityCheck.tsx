@@ -11,13 +11,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
-import { Loader2, Upload, ChevronDown, RotateCcw, AlertTriangle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Loader2, Upload, ChevronDown, RotateCcw, AlertTriangle, Download } from "lucide-react";
 import { NICE_CLASSES } from "@/lib/nice-classes";
 import { checkSimilarity, submitApplication, uploadLogo } from "@/lib/api";
 import type { SimilarMark } from "@/lib/mock-data";
 import { useToast } from "@/hooks/use-toast";
+import { generateMarkDisplayData } from "@/lib/random-mark-data";
 
 const schema = z.object({
   businessName: z.string().trim().min(1, "Required").max(200),
@@ -39,6 +43,11 @@ export default function SimilarityCheck() {
   const [submitted, setSubmitted] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [exportEmail, setExportEmail] = useState("");
+  const [exportImageReport, setExportImageReport] = useState(true);
+  const [exportTextReport, setExportTextReport] = useState(true);
+  const [exportFormat, setExportFormat] = useState<"excel" | "pdf" | "">("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -129,6 +138,21 @@ export default function SimilarityCheck() {
     setResults(null);
     setSubmitted(false);
     if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const handleExportSubmit = () => {
+    if (!exportEmail) {
+      toast({ title: "Email required", description: "Please enter an email address.", variant: "destructive" });
+      return;
+    }
+    if (!exportFormat) {
+      toast({ title: "Format required", description: "Please select an export format.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    setShowExport(false);
+    setExportEmail("");
+    setExportFormat("");
   };
 
   const [sectionsOpen, setSectionsOpen] = useState({ applicant: true, trademark: true });
@@ -259,22 +283,50 @@ export default function SimilarityCheck() {
           </Form>
         ) : (
           <div>
-            <h2 className="mb-4 text-lg font-semibold">Top Matching Registered Trademarks</h2>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Top Matching Registered Trademarks</h2>
+              <Button variant="default" size="sm" onClick={() => setShowExport(true)}>
+                <Download className="mr-1 h-4 w-4" /> Export Search Report
+              </Button>
+            </div>
 
-            <div className="mb-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {results.map((m) => (
-                <div key={m.id} className="group rounded-lg border border-border bg-card p-2 transition-shadow hover:shadow-md">
-                  <img
-                    src={m.imageUrl}
-                    alt={m.trademarkId}
-                    className="aspect-square w-full rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setLightboxUrl(m.imageUrl)}
-                  />
-                  <div className="mt-2 text-center">
-                    <p className="text-xs font-medium truncate">{m.trademarkId}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="mb-6 overflow-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-12">S/N</TableHead>
+                    <TableHead className="w-28">Thumbnail</TableHead>
+                    <TableHead>Application No.</TableHead>
+                    <TableHead>Class No.</TableHead>
+                    <TableHead>Applicant(s)</TableHead>
+                    <TableHead>Filing Date</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {results.map((m, i) => {
+                    const data = generateMarkDisplayData(m.trademarkId, i);
+                    return (
+                      <TableRow key={m.id}>
+                        <TableCell className="font-medium">{i + 1}</TableCell>
+                        <TableCell>
+                          <img
+                            src={m.imageUrl}
+                            alt={m.trademarkId}
+                            className="h-20 w-20 rounded border object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setLightboxUrl(m.imageUrl)}
+                          />
+                        </TableCell>
+                        <TableCell className="text-primary font-medium">{m.trademarkId}</TableCell>
+                        <TableCell>{data.classNo}</TableCell>
+                        <TableCell>{data.applicant}</TableCell>
+                        <TableCell>{data.filingDate}</TableCell>
+                        <TableCell>{data.status}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
 
             <div className="mb-4 flex gap-3">
@@ -295,6 +347,54 @@ export default function SimilarityCheck() {
         <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
           <DialogContent className="flex items-center justify-center p-2 sm:max-w-md">
             {lightboxUrl && <img src={lightboxUrl} alt="Trademark" className="max-h-[70vh] w-full rounded object-contain" />}
+          </DialogContent>
+        </Dialog>
+
+        {/* Export Search Report Dialog */}
+        <Dialog open={showExport} onOpenChange={setShowExport}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Export Search Report</DialogTitle>
+              <DialogDescription>
+                You will be notified via the email address provided once the results are ready and you may retrieve them via the email notification.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-4">
+                <Label className="w-16 shrink-0">Email</Label>
+                <Input value={exportEmail} onChange={(e) => setExportEmail(e.target.value)} placeholder="your@email.com" />
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Please select one/both of the following options:</p>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={exportImageReport} onCheckedChange={(v) => setExportImageReport(!!v)} />
+                    Image Search Report
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={exportTextReport} onCheckedChange={(v) => setExportTextReport(!!v)} />
+                    Text Search Report
+                  </label>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Please select the file to export in:</p>
+                <RadioGroup value={exportFormat} onValueChange={(v) => setExportFormat(v as "excel" | "pdf")}>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="excel" /> Excel
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="pdf" /> PDF
+                    </label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowExport(false)}>Cancel</Button>
+              <Button onClick={handleExportSubmit}>Submit</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 
