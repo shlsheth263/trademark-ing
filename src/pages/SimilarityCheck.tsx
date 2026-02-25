@@ -272,7 +272,6 @@ export default function SimilarityCheck() {
                   />
                   <div className="mt-2 text-center">
                     <p className="text-xs font-medium truncate">{m.trademarkId}</p>
-                    <p className="text-xs font-bold text-accent">{m.similarity}% match</p>
                   </div>
                 </div>
               ))}
