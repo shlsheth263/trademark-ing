@@ -331,9 +331,9 @@ export default function SimilarityCheck() {
             </div>
 
             {results.some((m) => m.similarity >= 90) && (
-              <div className="mb-4 flex items-center gap-2 text-sm">
-                <span className="inline-block h-4 w-4 rounded border bg-destructive/10" />
-                <span className="text-muted-foreground">Red rows indicate your logo is highly similar to an existing registered trademark.</span>
+              <div className="my-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 flex items-center gap-3">
+                <span className="inline-block h-5 w-5 shrink-0 rounded bg-destructive/30 border border-destructive/40" />
+                <span className="text-sm font-medium text-destructive">Red rows indicate your logo is highly similar to an existing registered trademark. Please review carefully before proceeding.</span>
               </div>
             )}
 
