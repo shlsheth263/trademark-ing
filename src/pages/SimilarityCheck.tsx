@@ -306,8 +306,9 @@ export default function SimilarityCheck() {
                 <TableBody>
                   {results.map((m, i) => {
                     const data = generateMarkDisplayData(m.trademarkId, i);
+                    const isHigh = m.similarity >= 90;
                     return (
-                      <TableRow key={m.id}>
+                      <TableRow key={m.id} className={isHigh ? "bg-destructive/10" : ""}>
                         <TableCell className="font-medium">{i + 1}</TableCell>
                         <TableCell>
                           <img
@@ -328,6 +329,13 @@ export default function SimilarityCheck() {
                 </TableBody>
               </Table>
             </div>
+
+            {results.some((m) => m.similarity >= 90) && (
+              <div className="mb-4 flex items-center gap-2 text-sm">
+                <span className="inline-block h-4 w-4 rounded border bg-destructive/10" />
+                <span className="text-muted-foreground">Red rows indicate your logo is highly similar to an existing registered trademark.</span>
+              </div>
+            )}
 
             <div className="mb-4 flex gap-3">
               <Button onClick={handleSubmitClick} disabled={submitting || submitted}>
