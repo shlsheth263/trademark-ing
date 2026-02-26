@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { type SimilarMark, type Application } from "./mock-data";
+import { sendEmail } from "./send-email";
+import { applicationSubmittedEmail, statusChangedEmail } from "./email-templates";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const TRADEMARK_IMAGES_BUCKET = "trademark-images";
@@ -105,6 +107,25 @@ export async function submitApplication(data: {
     .select("id")
     .single();
   if (error) throw error;
+
+  // Send confirmation email (fire-and-forget)
+  try {
+    await sendEmail({
+      receiver_email: data.email,
+      subject: `Application Submitted – ${data.businessName} (${result.id})`,
+      body: applicationSubmittedEmail({
+        applicantName: data.applicantName,
+        businessName: data.businessName,
+        applicationId: result.id,
+        category: data.category,
+        email: data.email,
+        submissionDate: new Date().toISOString().split("T")[0],
+      }),
+    });
+  } catch (e) {
+    console.error("Failed to send submission email:", e);
+  }
+
   return { applicationId: result.id };
 }
 
@@ -195,6 +216,33 @@ export async function submitDecision(
     notes,
     changed_by: user?.id || null,
   });
+
+  // Send status change email (fire-and-forget)
+  try {
+    const { data: app } = await supabase
+      .from("applications")
+      .select("applicant_name, business_name, email")
+      .eq("id", applicationId)
+      .single();
+    if (app?.email) {
+      const statusLabel = decision.charAt(0).toUpperCase() + decision.slice(1);
+      await sendEmail({
+        receiver_email: app.email,
+        subject: `Application ${statusLabel} – ${app.business_name} (${applicationId})`,
+        body: statusChangedEmail({
+          applicantName: app.applicant_name,
+          businessName: app.business_name,
+          applicationId,
+          oldStatus: (current?.status as string) || "submitted",
+          newStatus: decision,
+          agentNotes: notes || undefined,
+          changedDate: new Date().toISOString().split("T")[0],
+        }),
+      });
+    }
+  } catch (e) {
+    console.error("Failed to send status change email:", e);
+  }
 }
 
 // Map DB row to Application type
