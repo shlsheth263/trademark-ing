@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -140,7 +141,7 @@ export default function SimilarityCheck() {
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  const handleExportSubmit = () => {
+  const handleExportSubmit = async () => {
     if (!exportEmail) {
       toast({ title: "Email required", description: "Please enter an email address.", variant: "destructive" });
       return;
@@ -149,7 +150,15 @@ export default function SimilarityCheck() {
       toast({ title: "Format required", description: "Please select an export format.", variant: "destructive" });
       return;
     }
-    toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    try {
+      const { error } = await supabase.functions.invoke("send-export-email", {
+        body: { email: exportEmail, format: exportFormat, reportType: "Image Search Report" },
+      });
+      if (error) throw error;
+      toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    } catch {
+      toast({ title: "Error", description: "Failed to send export email.", variant: "destructive" });
+    }
     setShowExport(false);
     setExportEmail("");
     setExportFormat("");
