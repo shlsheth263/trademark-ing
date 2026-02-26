@@ -1,73 +1,94 @@
-# Welcome to your Lovable project
+# Trademark Frontend
 
-## Project info
+A React SPA for trademark search, similarity checking, application tracking, and an agent dashboard (review, bulk upload). Built with Vite, Supabase for auth and data, and an optional backend API.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Project structure
 
-## How can I edit this code?
+The app entry is `main.tsx` → `App.tsx`, which sets up React Router, Supabase auth, and TanStack Query. Routes and UI are organized under `src/`:
 
-There are several ways of editing your application.
+- **`src/pages`** — Route components: `Index`, `SimilarityCheck`, `ExploreSimilar`, `TrackApplication`; agent area: `Login`, `Dashboard`, `ReviewApplication`, `BulkUpload`
+- **`src/components`** — Reusable UI (shadcn) and layout (`Layout`, `Header`, `Footer`, `GovBanner`, `ProtectedRoute`, `NavLink`)
+- **`src/lib`** — Auth, API client, utils, mock data, email helpers
+- **`src/integrations/supabase`** — Supabase client and generated types
+- **`src/config`** — API base URL and env-based config
+- **`src/hooks`** — Shared hooks (e.g. toast, mobile)
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```mermaid
+flowchart LR
+  User --> App[React SPA]
+  App --> Supabase[Supabase]
+  App --> API[Backend API]
 ```
 
-**Edit a file directly in GitHub**
+## Prerequisites
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Local:** Node.js 18+ and npm ([install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- **Docker:** Docker and Docker Compose
 
-**Use GitHub Codespaces**
+## Run locally
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. Clone the repo and go to the project directory:
+   ```sh
+   git clone <YOUR_GIT_URL>
+   cd trademark_frontent
+   ```
 
-## What technologies are used for this project?
+2. Copy env example and set your Supabase credentials (and optional API URL):
+   ```sh
+   cp .env.example .env
+   ```
+   Edit `.env`: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Optionally set `VITE_API_BASE_URL` (if unset, the app uses the default backend URL from `src/config/api.ts`).
 
-This project is built with:
+3. Install dependencies and start the dev server:
+   ```sh
+   npm install
+   npm run dev
+   ```
+   Open **http://localhost:8080**.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Run with Docker
 
-## How can I deploy this project?
+`VITE_*` variables are embedded at **build** time. Have a `.env` in the project root (same as for local run) so Docker Compose can pass them as build args.
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+```sh
+cp .env.example .env
+# Edit .env with your values, then:
 
-## Can I connect a custom domain to my Lovable project?
+docker compose build
+docker compose up
+```
 
-Yes, you can!
+App is served at **http://localhost:8080** (container listens on 80, mapped to 8080).
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+To build and run without compose:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```sh
+docker build \
+  --build-arg VITE_SUPABASE_URL=your_url \
+  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=your_key \
+  -t trademark-frontend .
+docker run -p 8080:80 trademark-frontend
+```
+
+## Available scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server (port 8080) |
+| `npm run build` | Production build |
+| `npm run build:dev` | Build in development mode |
+| `npm run preview` | Preview production build locally |
+| `npm run lint` | Run ESLint |
+| `npm run test` | Run Vitest once |
+| `npm run test:watch` | Run Vitest in watch mode |
+
+## Tech stack
+
+- Vite, TypeScript, React, React Router
+- Supabase (auth and data)
+- TanStack React Query
+- shadcn-ui (Radix UI), Tailwind CSS
+
+## Deploy and Lovable
+
+You can edit this project in [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and deploy via Share → Publish. To use a custom domain: Project > Settings > Domains → Connect Domain. See [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain).
