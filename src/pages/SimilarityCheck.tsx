@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { sendEmail } from "@/lib/send-email";
+import { exportReportEmail } from "@/lib/email-templates";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -154,40 +155,14 @@ export default function SimilarityCheck() {
       const formatLabel = exportFormat === "pdf" ? "PDF" : "Excel";
       await sendEmail({
         receiver_email: exportEmail,
-        subject: `Your Image Search Report (${formatLabel}) is being prepared`,
-        body: `
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f4f6f9;font-family:'Segoe UI',Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f9;padding:40px 0;">
-    <tr><td align="center">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-        <tr><td style="background-color:#1a2b5f;padding:32px 40px;text-align:center;"><h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">TrademarkING</h1></td></tr>
-        <tr><td style="padding:40px;">
-          <h2 style="margin:0 0 8px;color:#1a2b5f;font-size:20px;">Export Report Request Received</h2>
-          <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">Your export request has been received and is being processed.</p>
-          <table role="presentation" width="100%" style="background:#f8f9fc;border-radius:6px;border:1px solid #e2e6ef;margin-bottom:24px;">
-            <tr><td style="padding:20px;">
-              <table role="presentation" width="100%">
-                <tr><td style="padding:6px 0;color:#888;font-size:13px;width:140px;">Report Type</td><td style="padding:6px 0;color:#333;font-size:14px;font-weight:600;">Image Search Report</td></tr>
-                <tr><td style="padding:6px 0;color:#888;font-size:13px;">Export Format</td><td style="padding:6px 0;color:#333;font-size:14px;">${formatLabel}</td></tr>
-              </table>
-            </td></tr>
-          </table>
-          <p style="margin:0;color:#555;font-size:14px;">If you did not request this export, please disregard this email.</p>
-        </td></tr>
-        <tr><td style="background-color:#f8f9fc;padding:24px 40px;border-top:1px solid #e2e6ef;text-align:center;">
-          <p style="margin:0 0 4px;color:#999;font-size:12px;">This is an automated message from TrademarkING.</p>
-          <p style="margin:0;color:#999;font-size:12px;">Please do not reply to this email.</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`,
+        subject: `Image Search Report (${formatLabel}) – ${results?.length || 0} results`,
+        body: exportReportEmail({
+          results: results || [],
+          format: formatLabel,
+          searchDate: new Date().toISOString().split("T")[0],
+        }),
       });
-      toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+      toast({ title: "Report Sent", description: "The search report has been sent to your email." });
     } catch {
       toast({ title: "Error", description: "Failed to send export email.", variant: "destructive" });
     }
