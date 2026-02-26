@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ export default function ExploreSimilar() {
     }
   };
 
-  const handleExportSubmit = () => {
+  const handleExportSubmit = async () => {
     if (!exportEmail) {
       toast({ title: "Email required", description: "Please enter an email address.", variant: "destructive" });
       return;
@@ -80,7 +81,15 @@ export default function ExploreSimilar() {
       toast({ title: "Format required", description: "Please select an export format.", variant: "destructive" });
       return;
     }
-    toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    try {
+      const { error } = await supabase.functions.invoke("send-export-email", {
+        body: { email: exportEmail, format: exportFormat, reportType: "Image Search Report" },
+      });
+      if (error) throw error;
+      toast({ title: "Export Requested", description: "You will receive the report via email shortly." });
+    } catch {
+      toast({ title: "Error", description: "Failed to send export email.", variant: "destructive" });
+    }
     setShowExport(false);
     setExportEmail("");
     setExportFormat("");
