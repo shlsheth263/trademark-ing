@@ -227,7 +227,7 @@ export default function SimilarityCheck() {
                     <CardContent className="space-y-4">
                       <FormField control={form.control} name="category" render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Trademark Category (NICE Class) *</FormLabel>
+                          <FormLabel>Trademark Category *</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger></FormControl>
                             <SelectContent>{NICE_CLASSES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>

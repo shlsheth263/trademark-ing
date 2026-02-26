@@ -55,7 +55,7 @@ export default function ExploreSimilar() {
       return;
     }
     if (!category) {
-      toast({ title: "Category required", description: "Please select a NICE class.", variant: "destructive" });
+      toast({ title: "Category required", description: "Please select a trademark category.", variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -114,7 +114,7 @@ export default function ExploreSimilar() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>Trademark Category (NICE Class) *</Label>
+              <Label>Trademark Category *</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select a class" /></SelectTrigger>
                 <SelectContent>{NICE_CLASSES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
