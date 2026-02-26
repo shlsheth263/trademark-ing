@@ -27,7 +27,7 @@ export default function ExploreSimilar() {
   const [showExport, setShowExport] = useState(false);
   const [exportEmail, setExportEmail] = useState("");
   const [exportImageReport, setExportImageReport] = useState(true);
-  const [exportTextReport, setExportTextReport] = useState(true);
+  
   const [exportFormat, setExportFormat] = useState<"excel" | "pdf" | "">("");
   const fileRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -206,15 +206,11 @@ export default function ExploreSimilar() {
                 <Input value={exportEmail} onChange={(e) => setExportEmail(e.target.value)} placeholder="your@email.com" />
               </div>
               <div>
-                <p className="mb-2 text-sm font-medium">Please select one/both of the following options:</p>
+                <p className="mb-2 text-sm font-medium">Please select the following option:</p>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center gap-2 text-sm">
                     <Checkbox checked={exportImageReport} onCheckedChange={(v) => setExportImageReport(!!v)} />
                     Image Search Report
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <Checkbox checked={exportTextReport} onCheckedChange={(v) => setExportTextReport(!!v)} />
-                    Text Search Report
                   </label>
                 </div>
               </div>
